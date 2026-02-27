@@ -10,7 +10,20 @@ import {
     getUserPositionPDA,
     getOrderPDA,
 } from "../../utils/constants";
-import cancelOrderData from "../../../../build/cancel_order.profile.json";
+// Inline mock for cancelOrderData to avoid missing build directory errors on Vercel
+const cancelOrderData = {
+    types: {
+        PrivateOrder: {
+            fields: [
+                { name: "asset", type: "u64" },
+                { name: "side", type: "u8" },
+                { name: "price", type: "u128" },
+                { name: "size", type: "u128" },
+                { name: "timestamp", type: "i64" }
+            ]
+        }
+    }
+};
 import { ArcisModule, Aes256Cipher, serializeLE, generateRandomFieldElem, CURVE25519_SCALAR_FIELD_MODULUS, createPacker } from "@arcium-hq/client";
 
 export function OrdersList({ orders = [], hideHeader = false, program, publicKey, market, arciumAccounts, showToast }) {

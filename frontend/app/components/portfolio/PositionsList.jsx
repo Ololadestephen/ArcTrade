@@ -10,7 +10,14 @@ import {
   getComputationConfigPDA,
   getUserPositionPDA,
 } from "../../utils/constants";
-import updatePositionData from "../../../../build/update_position.profile.json";
+// Inline mock for updatePositionData to avoid missing build directory errors on Vercel
+const updatePositionData = {
+  types: {
+    Position: {
+      fields: []
+    }
+  }
+};
 import { ArcisModule, Aes256Cipher, serializeLE, generateRandomFieldElem, CURVE25519_SCALAR_FIELD_MODULUS, createPacker } from "@arcium-hq/client";
 
 export function PositionsList({ positions = [], hideHeader = false, program, publicKey, market, arciumAccounts, showToast }) {
