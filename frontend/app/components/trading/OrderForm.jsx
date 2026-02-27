@@ -5,7 +5,20 @@ import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { PrivacyBadge } from "../privacy/PrivacyBadge";
 import { ArcisModule, Aes256Cipher, serializeLE, generateRandomFieldElem, CURVE25519_SCALAR_FIELD_MODULUS, createPacker } from "@arcium-hq/client";
-import placeOrderData from "../../../../build/place_order.profile.json";
+// Inline mock for placeOrderData to avoid build errors from missing un-versioned build directories.
+const placeOrderData = {
+  types: {
+    PrivateOrder: {
+      fields: [
+        { name: "asset", type: "u64" },
+        { name: "side", type: "u8" },
+        { name: "price", type: "u128" },
+        { name: "size", type: "u128" },
+        { name: "timestamp", type: "i64" }
+      ]
+    }
+  }
+};
 import { PrivacyLevelSelector } from "../privacy/PrivacyLevelSelector";
 import { MEVProtectionBadge } from "../privacy/MEVProtectionBadge";
 import {
