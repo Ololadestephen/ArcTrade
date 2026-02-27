@@ -24,7 +24,7 @@ User → Encrypts Order → Arcium MPC → Private Match → Final PnL → On-ch
 ```
 
 ## 🎮 Live Demo
-Try ArcTrade on Devnet: [https://arctrade.vercel.app](https://arctrade.vercel.app)
+Try ArcTrade on Devnet: [https://arctrades.vercel.app](https://arctrades.vercel.app)
 
 
 
