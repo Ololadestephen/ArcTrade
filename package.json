@@ -1,0 +1,17 @@
+{
+  "name": "private-trading-arcium",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test": "anchor test"
+  },
+  "devDependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "chai": "^4.5.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.98.4"
+  }
+}

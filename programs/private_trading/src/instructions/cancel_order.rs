@@ -1,0 +1,94 @@
+use anchor_lang::prelude::*;
+
+use crate::constants::{IX_CANCEL_ORDER, MAX_ENCRYPTED_ORDER_BLOB, ORDER_STATUS_OPEN};
+use crate::errors::PrivateTradingError;
+use crate::instructions::common::{bounded_blob, compute_deterministic_id, require_encrypted_accounts};
+use crate::state::{ComputationConfigAccount, MarketAccount, OrderAccount, UserPositionAccount};
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone)]
+pub struct CancelOrderArgs {
+    pub encrypted_cancel_blob: Vec<u8>,
+}
+
+pub fn cancel_order(ctx: Context<CancelOrder>, args: CancelOrderArgs) -> Result<()> {
+    require!(!ctx.accounts.market.paused, PrivateTradingError::MarketPaused);
+
+    let encrypted_cancel_blob = bounded_blob(args.encrypted_cancel_blob, MAX_ENCRYPTED_ORDER_BLOB)?;
+    require_encrypted_accounts(
+        &ctx.accounts.arcium_signer_pda,
+        &ctx.accounts.mxe_account,
+        &ctx.accounts.mempool_account,
+        &ctx.accounts.execution_pool_account,
+        &ctx.accounts.computation_account,
+        &ctx.accounts.computation_definition_account,
+        &ctx.accounts.cluster_account,
+        &ctx.accounts.fee_pool_account,
+        &ctx.accounts.arcium_program,
+        &ctx.accounts.computation_config,
+    )?;
+
+    let order = &ctx.accounts.order;
+    require!(order.status == ORDER_STATUS_OPEN, PrivateTradingError::InvalidAccount);
+
+    let user_position = &mut ctx.accounts.user_position;
+    require_keys_eq!(
+        user_position.owner,
+        ctx.accounts.payer.key(),
+        PrivateTradingError::UnauthorizedAccess
+    );
+
+    let computation_id = compute_deterministic_id(
+        &ctx.accounts.payer.key(),
+        user_position.nonce,
+        IX_CANCEL_ORDER,
+        &encrypted_cancel_blob,
+    );
+    user_position.pending_computation_id = computation_id;
+    user_position.pending_instruction = IX_CANCEL_ORDER;
+
+    Ok(())
+}
+
+#[derive(Accounts)]
+pub struct CancelOrder<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(
+        mut,
+        has_one = owner @ PrivateTradingError::UnauthorizedAccess,
+        seeds = [crate::constants::USER_POSITION_SEED, owner.key().as_ref()],
+        bump = user_position.bump
+    )]
+    pub user_position: Account<'info, UserPositionAccount>,
+    /// CHECK: User owner relation enforced by has_one.
+    pub owner: UncheckedAccount<'info>,
+    #[account(
+        mut,
+        constraint = order.maker == payer.key() @ PrivateTradingError::UnauthorizedAccess
+    )]
+    pub order: Account<'info, OrderAccount>,
+    #[account(mut)]
+    pub market: Account<'info, MarketAccount>,
+    #[account(mut)]
+    pub computation_config: Account<'info, ComputationConfigAccount>,
+    /// CHECK: Required Arcium signer PDA.
+    pub arcium_signer_pda: UncheckedAccount<'info>,
+    /// CHECK: Required MXE account.
+    pub mxe_account: UncheckedAccount<'info>,
+    /// CHECK: Required mempool account.
+    pub mempool_account: UncheckedAccount<'info>,
+    /// CHECK: Required execution pool account.
+    pub execution_pool_account: UncheckedAccount<'info>,
+    /// CHECK: Required computation account.
+    pub computation_account: UncheckedAccount<'info>,
+    /// CHECK: Required computation definition account.
+    pub computation_definition_account: UncheckedAccount<'info>,
+    /// CHECK: Required cluster account.
+    pub cluster_account: UncheckedAccount<'info>,
+    /// CHECK: Required fee pool account.
+    pub fee_pool_account: UncheckedAccount<'info>,
+    pub clock: Sysvar<'info, Clock>,
+    pub system_program: Program<'info, System>,
+    /// CHECK: Arcium program id validated against config.
+    pub arcium_program: UncheckedAccount<'info>,
+}

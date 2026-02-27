@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build files
+target/
+build/
+dist/
+Cargo.lock
+
+# Environment
+.env
+.env.*
+
+# OS files
+.DS_Store
+*.swp
+*~
+
+# Vendor / Cargo specifics
+**/.cargo_vcs_info.json
