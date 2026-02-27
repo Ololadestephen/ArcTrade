@@ -4,6 +4,8 @@ ArcTrade is a decentralized, privacy-preserving trading terminal built on Solana
 
 By encrypting trader intent (size, side, entry price) until the trade is finalized, ArcTrade mitigates MEV extraction, front-running, and copy-trading, ensuring your edge stays yours.
 
+![ArcTrade Terminal](assets/screenshot.png)
+
 ## Features
 - **Encrypted Orders:** Order data is encrypted client-side and sent directly to the Arcium MPC network.
 - **Dark Pool Matching:** Orders are matched privately without revealing the order book state.
@@ -24,7 +26,7 @@ User → Encrypts Order → Arcium MPC → Private Match → Final PnL → On-ch
 ## 🎮 Live Demo
 Try ArcTrade on Devnet: [https://arctrade.vercel.app](https://arctrade.vercel.app)
 
-*Watch a 2-minute demo: [YouTube Link] (optional)*
+
 
 ## 🛠️ Built With
 - **Frontend**: React, Vite, TypeScript
