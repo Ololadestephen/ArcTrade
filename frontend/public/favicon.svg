@@ -1,5 +1,9 @@
 <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="400" height="400" fill="#030305"/>
-  <rect x="200" y="50" width="200" height="200" transform="rotate(45 200 50)" fill="none" stroke="#00E5CC" stroke-width="12"/>
-  <rect x="165" y="165" width="70" height="70" fill="#00E5CC"/>
+  <rect width="400" height="400" fill="#FFFFFF"/>
+  <!-- The A formed by two thick strokes -->
+  <path d="M120 320L200 100L280 320" stroke="#111111" stroke-width="50" stroke-linecap="square"/>
+  <!-- The Arc wrapping around representing the Arcium network/privacy shield -->
+  <path d="M320 220C320 286.274 266.274 340 200 340C133.726 340 80 286.274 80 220C80 153.726 133.726 100 200 100" stroke="#E74F3D" stroke-width="30" stroke-linecap="round"/>
+  <!-- A small core dot representing the private computation unit -->
+  <circle cx="200" cy="200" r="20" fill="#E74F3D"/>
 </svg>

@@ -17,17 +17,15 @@ export function SummaryCards({ positions = [], orders = [] }) {
       value: positions.length > 0 ? `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "$0.00",
       sub: positions.length > 0 ? `Public Margin` : "No active positions",
       subColor: "var(--ghost)",
-      icon: "💼",
       spark: true
     },
-    { label: "Open Positions", value: positions.length, sub: "On-chain PDA", subColor: "var(--cyan)", icon: "📊", spark: false },
-    { label: "Hidden Orders", value: orders.length, sub: "Encrypted instances", subColor: "var(--cyan)", icon: "🔐", spark: false },
+    { label: "Open Positions", value: positions.length, sub: "On-chain PDA", subColor: "var(--cyan)", spark: false },
+    { label: "Hidden Orders", value: orders.length, sub: "Encrypted instances", subColor: "var(--cyan)", spark: false },
     {
       label: "Total PnL",
       value: totalPnL >= 0 ? `+$${totalPnL.toFixed(2)}` : `-$${Math.abs(totalPnL).toFixed(2)}`,
       sub: "Unrealized",
       subColor: totalPnL >= 0 ? "var(--green)" : "var(--red)",
-      icon: "📈",
       spark: false
     },
   ];
@@ -43,7 +41,6 @@ export function SummaryCards({ positions = [], orders = [] }) {
             }}>
               {c.label}
             </div>
-            <span style={{ fontSize: 18 }}>{c.icon}</span>
           </div>
 
           <div style={{
@@ -63,4 +60,3 @@ export function SummaryCards({ positions = [], orders = [] }) {
     </div>
   );
 }
-

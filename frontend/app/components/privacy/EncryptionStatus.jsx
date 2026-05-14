@@ -4,20 +4,14 @@ export function EncryptionStatus({ active = true }) {
     <div style={{
       display: "flex", alignItems: "center", gap: 12,
       padding: "12px 14px",
-      background: active ? "rgba(0, 229, 204, 0.05)" : "rgba(245,158,11,0.05)",
-      border: `1px solid ${active ? "rgba(0, 229, 204, 0.15)" : "rgba(245,158,11,0.15)"}`,
-      borderRadius: 8,
-      boxShadow: active ? "inset 0 0 12px rgba(0, 229, 204, 0.05)" : "none",
+      background: "var(--black)",
+      border: "1px solid var(--border)",
+      borderRadius: 0,
     }}>
       <div style={{
-        width: 28, height: 28, borderRadius: 6,
-        background: active ? "rgba(0, 229, 204, 0.1)" : "rgba(245,158,11,0.1)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 14,
-        boxShadow: active ? "0 0 10px rgba(0, 229, 204, 0.2)" : "none",
-      }}>
-        {active ? "🔐" : "⚠️"}
-      </div>
+        width: 7, height: 7, borderRadius: "50%",
+        background: active ? "var(--cyan)" : "var(--amber)",
+      }} />
       <div>
         <div style={{
           fontFamily: "'DM Mono',monospace", fontSize: 11,
@@ -25,13 +19,9 @@ export function EncryptionStatus({ active = true }) {
           letterSpacing: "0.08em",
           fontWeight: 500,
         }}>
-          {active ? "MPC ENCRYPTED" : "PARTIAL PRIVACY"}
-        </div>
-        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--dim)", marginTop: 2 }}>
-          Arcium MXE • 256-bit
+          {active ? "MPC ENCRYPTED" : "PARTIAL"}
         </div>
       </div>
     </div>
   );
 }
-

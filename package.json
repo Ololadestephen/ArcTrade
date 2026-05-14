@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "test": "anchor test"
+    "test": "anchor test",
+    "init:arcium": "node scripts/init-arcium-comp-defs.cjs"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.32.1",

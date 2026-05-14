@@ -10,31 +10,31 @@
 }
 
 :root {
-  --black: #030305;
-  --void: #0a0a0e;
-  --ink: #0d0d14;
-  --panel: #0a0a0e;
-  --panel2: #0d0d14;
-  --border: #1a1a24;
-  --border2: #2a2a3a;
-  --muted: #555566;
-  --dim: #777788;
-  --ghost: #9999aa;
-  --text: #eeeeee;
-  --bright: #ffffff;
-  --white: #ffffff;
+  --black: #f7f6f2;
+  --void: #fbfaf7;
+  --ink: #111111;
+  --panel: #fbfaf7;
+  --panel2: #f0eee8;
+  --border: #dedbd3;
+  --border2: #c8c3b8;
+  --muted: #9a9a9a;
+  --dim: #555555;
+  --ghost: #777777;
+  --text: #222222;
+  --bright: #111111;
+  --white: #111111;
 
-  --cyan: #00e5cc;
-  --cyan-dim: rgba(0, 229, 204, 0.15);
-  --cyan-glow: rgba(0, 229, 204, 0.3);
-  --violet: #7c3aed;
-  --violet-dim: rgba(124, 58, 237, 0.15);
+  --cyan: #e74f3d;
+  --cyan-dim: rgba(231, 79, 61, 0.1);
+  --cyan-glow: rgba(231, 79, 61, 0.18);
+  --violet: #6f6258;
+  --violet-dim: rgba(111, 98, 88, 0.12);
   --amber: #f59e0b;
-  --red: #ef4444;
-  --red-dim: rgba(239, 68, 68, 0.15);
-  --green: #10b981;
-  --green-dim: rgba(16, 185, 129, 0.15);
-  --blue: #3b82f6;
+  --red: #e74f3d;
+  --red-dim: rgba(231, 79, 61, 0.12);
+  --green: #287a4b;
+  --green-dim: rgba(40, 122, 75, 0.1);
+  --blue: #355c7d;
 }
 
 html {
@@ -46,7 +46,6 @@ body {
   color: var(--text);
   font-family: 'Syne', sans-serif;
   overflow-x: hidden;
-  cursor: none;
 }
 
 a,
@@ -57,7 +56,7 @@ select,
 label,
 .tab,
 .toggle {
-  cursor: none !important;
+  cursor: pointer;
 }
 
 ::-webkit-scrollbar {
@@ -217,7 +216,7 @@ label,
   padding: 10px 20px;
   border: none;
   outline: none;
-  border-radius: 6px;
+  border-radius: 0;
   font-family: 'Syne', sans-serif;
   font-weight: 600;
   font-size: 13px;
@@ -227,18 +226,18 @@ label,
 }
 
 .btn-primary {
-  background: var(--cyan);
-  color: var(--black);
-  border: 1px solid var(--cyan);
-  box-shadow: 2px 2px 0px var(--cyan-dim);
+  background: #3f3f3f;
+  color: #ffffff;
+  border: 1px solid #3f3f3f;
+  box-shadow: none;
   border-radius: 0px;
 }
 
 .btn-primary:hover {
-  background: transparent;
-  color: var(--cyan);
-  box-shadow: 4px 4px 0px var(--cyan-dim);
-  transform: translate(-2px, -2px);
+  background: var(--ink);
+  color: #ffffff;
+  box-shadow: none;
+  transform: none;
 }
 
 .btn-ghost {
@@ -274,7 +273,7 @@ label,
 }
 
 .card {
-  background: var(--black);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 0px;
   transition: all 0.2s ease;
@@ -282,7 +281,7 @@ label,
 
 .card:hover {
   border-color: var(--border2);
-  background: var(--void);
+  background: var(--panel);
 }
 
 .card-header {
@@ -418,8 +417,8 @@ label {
 }
 
 .tab.active {
-  color: var(--black);
-  background: var(--cyan);
+  color: #ffffff;
+  background: #3f3f3f;
   border-bottom-color: var(--cyan);
 }
 
@@ -436,14 +435,14 @@ label {
   letter-spacing: 0.08em;
   padding: 12px 14px;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
   font-size: 11px;
   text-transform: uppercase;
 }
 
 .table td {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
   color: var(--text);
 }
 
@@ -452,7 +451,7 @@ label {
 }
 
 .table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(17, 17, 17, 0.025);
 }
 
 .table tr:last-child td {

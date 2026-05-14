@@ -1,3 +1,4 @@
+pub mod arcium_comp_defs;
 pub mod callback;
 pub mod cancel_order;
 pub mod check_liquidation;
@@ -8,6 +9,7 @@ pub mod place_order;
 pub mod settle_trade;
 pub mod update_position;
 
+pub use arcium_comp_defs::*;
 pub use callback::*;
 pub use cancel_order::*;
 pub use check_liquidation::*;

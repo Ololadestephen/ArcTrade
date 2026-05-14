@@ -8,7 +8,7 @@ export function TopBar({ page, wallet, connect, disconnect }) {
   return (
     <div style={{
       height: 60,
-      background: "var(--black)",
+      background: "rgba(247, 246, 242, 0.94)",
       borderBottom: "1px solid var(--border)",
       display: "flex", alignItems: "center", justifyContent: "space-between",
       padding: "0 28px",
@@ -16,7 +16,7 @@ export function TopBar({ page, wallet, connect, disconnect }) {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--dim)", letterSpacing: "0.08em" }}>
-          /app/
+          /arc/
         </span>
         <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 13, color: "var(--bright)", fontWeight: 500 }}>
           {page}
@@ -46,7 +46,7 @@ export function TopBar({ page, wallet, connect, disconnect }) {
             {showWallets && (
               <div style={{
                 position: "absolute", top: "100%", right: 0, marginTop: 8,
-                background: "var(--panel)", border: "1px solid var(--border)",
+              background: "var(--panel)", border: "1px solid var(--border)",
                 display: "flex", flexDirection: "column", padding: 8, gap: 4,
                 zIndex: 100, minWidth: 150, boxShadow: "0 4px 12px rgba(0,0,0,0.5)"
               }}>

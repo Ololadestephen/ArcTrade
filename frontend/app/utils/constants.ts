@@ -17,7 +17,7 @@ export const PROGRAM_ID = new PublicKey(
 
 /** Arcium program ID (fixed across environments). */
 export const ARCIUM_PROGRAM_ID = new PublicKey(
-  "2oBXGf1AM2MK5kVk5jhJvv9xguHRFfgmPV5GKSmfVhWu"
+  "Arcj82pX7HxYKLR92qvgZUAd7vGS1k4hQvAFcPATFdEQ"
 );
 
 /**
@@ -28,6 +28,8 @@ export const ARCIUM_PROGRAM_ID = new PublicKey(
 export const ARCIUM_CLUSTER_OFFSET: number = Number(
   import.meta.env.VITE_ARCIUM_CLUSTER_OFFSET ?? 456
 );
+
+export const PLACE_ORDER_COMP_DEF_OFFSET = 2774547222;
 
 // ── Solana ─────────────────────────────────────────────────────────────────
 
@@ -77,5 +79,99 @@ export function getOrderPDA(
   return PublicKey.findProgramAddressSync(
     [Buffer.from("order"), payer.toBuffer(), idBuf],
     PROGRAM_ID
+  );
+}
+
+function u32Le(value: number): Buffer {
+  const buf = Buffer.alloc(4);
+  buf.writeUInt32LE(value);
+  return buf;
+}
+
+function u64Le(value: number | bigint): Buffer {
+  const buf = Buffer.alloc(8);
+  buf.writeBigUInt64LE(BigInt(value));
+  return buf;
+}
+
+export function getArciumMXEAccountPDA(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("MXEAccount"), PROGRAM_ID.toBuffer()],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumSignerPDA(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("ArciumSignerAccount")],
+    PROGRAM_ID
+  );
+}
+
+export function getArciumClusterPDA(
+  clusterOffset: number = ARCIUM_CLUSTER_OFFSET
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("Cluster"), u32Le(clusterOffset)],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumMempoolPDA(
+  clusterOffset: number = ARCIUM_CLUSTER_OFFSET
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("Mempool"), u32Le(clusterOffset)],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumExecutingPoolPDA(
+  clusterOffset: number = ARCIUM_CLUSTER_OFFSET
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("Execpool"), u32Le(clusterOffset)],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumComputationPDA(
+  computationOffset: number | bigint,
+  clusterOffset: number = ARCIUM_CLUSTER_OFFSET
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("ComputationAccount"),
+      u32Le(clusterOffset),
+      u64Le(computationOffset),
+    ],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumComputationDefinitionPDA(
+  offset: number = PLACE_ORDER_COMP_DEF_OFFSET
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [
+      Buffer.from("ComputationDefinitionAccount"),
+      PROGRAM_ID.toBuffer(),
+      u32Le(offset),
+    ],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumFeePoolPDA(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("FeePool")],
+    ARCIUM_PROGRAM_ID
+  );
+}
+
+export function getArciumClockPDA(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("ClockAccount")],
+    ARCIUM_PROGRAM_ID
   );
 }

@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use arcium_anchor::prelude::*;
 
 pub mod constants;
 pub mod errors;
@@ -10,7 +11,7 @@ use instructions::*;
 
 declare_id!("e6oyALFfDbVMy4gp3xVr5hRXo5VyCSw23gxk9M3YALM");
 
-#[program]
+#[arcium_program]
 pub mod private_trading {
     use super::*;
 
@@ -35,8 +36,41 @@ pub mod private_trading {
         instructions::initialize_computation_config(ctx, instruction_offsets)
     }
 
+    pub fn init_place_order_comp_def(ctx: Context<InitPlaceOrderCompDef>) -> Result<()> {
+        instructions::init_place_order_comp_def(ctx)
+    }
+
+    pub fn init_match_orders_comp_def(ctx: Context<InitMatchOrdersCompDef>) -> Result<()> {
+        instructions::init_match_orders_comp_def(ctx)
+    }
+
+    pub fn init_check_liquidation_comp_def(
+        ctx: Context<InitCheckLiquidationCompDef>,
+    ) -> Result<()> {
+        instructions::init_check_liquidation_comp_def(ctx)
+    }
+
+    pub fn init_settle_trade_comp_def(ctx: Context<InitSettleTradeCompDef>) -> Result<()> {
+        instructions::init_settle_trade_comp_def(ctx)
+    }
+
+    pub fn init_cancel_order_comp_def(ctx: Context<InitCancelOrderCompDef>) -> Result<()> {
+        instructions::init_cancel_order_comp_def(ctx)
+    }
+
+    pub fn init_update_position_comp_def(ctx: Context<InitUpdatePositionCompDef>) -> Result<()> {
+        instructions::init_update_position_comp_def(ctx)
+    }
+
     pub fn place_order(ctx: Context<PlaceOrder>, args: PlaceOrderArgs) -> Result<()> {
         instructions::place_order(ctx, args)
+    }
+
+    pub fn place_order_private(
+        ctx: Context<PlaceOrderPrivate>,
+        args: PlaceOrderPrivateArgs,
+    ) -> Result<()> {
+        instructions::place_order_private(ctx, args)
     }
 
     pub fn match_orders(ctx: Context<MatchOrders>, args: MatchOrdersArgs) -> Result<()> {

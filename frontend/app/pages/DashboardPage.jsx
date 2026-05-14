@@ -10,6 +10,15 @@ export function DashboardPage({ positions = [], orders = [], history = [], defau
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 2, animation: "fadeIn 0.4s ease" }}>
+      <div style={{ padding: "10px 0 26px", borderBottom: "1px solid var(--border)", marginBottom: 18 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: "var(--cyan)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 14 }}>
+          Private account
+        </div>
+        <h1 style={{ fontFamily: "'Instrument Serif',serif", fontSize: "clamp(48px,6vw,76px)", fontWeight: 400, lineHeight: 0.95, color: "var(--ink)" }}>
+          Positions without public intent.
+        </h1>
+      </div>
+
       <SummaryCards positions={positions} orders={orders} />
 
       <div className="card" style={{ padding: "0" }}>

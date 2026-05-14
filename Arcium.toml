@@ -1,5 +1,8 @@
 [arcium]
-version = "0.8.0"
+version = "0.9.7"
 
 [programs]
-private_trading = "9hFhMKrhEMfP2fRaSPoaqe7iLFKcdpShUMHbKyDJrpV5"
+private_trading = "e6oyALFfDbVMy4gp3xVr5hRXo5VyCSw23gxk9M3YALM"
+
+[clusters.devnet]
+offset = 456

@@ -1,10 +1,10 @@
 // ArcTrade — PrivacySummary (app/components/privacy)
 const FIELDS = [
-  { label: "Order Price",      status: "encrypted", icon: "🔐" },
-  { label: "Order Size",       status: "encrypted", icon: "🔐" },
-  { label: "Trade Direction",  status: "encrypted", icon: "🔐" },
-  { label: "Counterparty",     status: "encrypted", icon: "🔐" },
-  { label: "Final PnL",        status: "revealed",  icon: "👁"  },
+  { label: "Order Price", status: "encrypted" },
+  { label: "Order Size", status: "encrypted" },
+  { label: "Trade Direction", status: "encrypted" },
+  { label: "Counterparty", status: "encrypted" },
+  { label: "Final PnL", status: "revealed" },
 ];
 
 export function PrivacySummary() {
@@ -13,7 +13,6 @@ export function PrivacySummary() {
       padding: "16px",
       background: "var(--void)",
       border: "1px solid var(--border)",
-      borderRadius: 2,
       animation: "fadeIn 0.4s ease",
     }}>
       <div style={{
@@ -33,7 +32,7 @@ export function PrivacySummary() {
               fontFamily: "'DM Mono',monospace", fontSize: 11,
               color: f.status === "encrypted" ? "var(--cyan)" : "var(--amber)",
             }}>
-              {f.icon} {f.status.toUpperCase()}
+              {f.status.toUpperCase()}
             </span>
           </div>
         ))}
@@ -41,4 +40,3 @@ export function PrivacySummary() {
     </div>
   );
 }
-

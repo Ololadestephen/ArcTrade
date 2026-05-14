@@ -5,10 +5,16 @@ yarn-error.log
 
 # Build files
 target/
-build/
+build/*
+!build/
+!build/*.arcis
+!build/*.hash
+!build/*.idarc
+!build/*.weight
 dist/
 artifacts/
-Cargo.lock
+**/Cargo.lock
+!/Cargo.lock
 
 # Environment
 .env

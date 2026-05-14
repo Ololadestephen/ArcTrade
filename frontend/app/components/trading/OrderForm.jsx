@@ -4,7 +4,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { PublicKey, SystemProgram } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import { PrivacyBadge } from "../privacy/PrivacyBadge";
-import { ArcisModule, Aes256Cipher, serializeLE, generateRandomFieldElem, CURVE25519_SCALAR_FIELD_MODULUS, createPacker } from "@arcium-hq/client";
+import { ArcisModule, Aes256Cipher, serializeLE, deserializeLE, generateRandomFieldElem, CURVE25519_SCALAR_FIELD_MODULUS, createPacker, RescueCipher, getMXEPublicKey, x25519 } from "@arcium-hq/client";
 // Inline mock for placeOrderData to avoid build errors from missing un-versioned build directories.
 const placeOrderData = {
   types: {
@@ -27,6 +27,15 @@ import {
   getComputationConfigPDA,
   getUserPositionPDA,
   getOrderPDA,
+  getArciumMXEAccountPDA,
+  getArciumSignerPDA,
+  getArciumClusterPDA,
+  getArciumMempoolPDA,
+  getArciumExecutingPoolPDA,
+  getArciumComputationPDA,
+  getArciumComputationDefinitionPDA,
+  getArciumFeePoolPDA,
+  getArciumClockPDA,
 } from "../../utils/constants";
 
 const ORDER_TYPES = ["market", "limit"];
@@ -75,6 +84,73 @@ function buildArciumAccounts({
     clusterAccount,
     feePoolAccount,
     arciumProgram,
+  };
+}
+
+function asBytes32(bytes) {
+  return Array.from(bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes));
+}
+
+function randomNonce16() {
+  const nonce = new Uint8Array(16);
+  globalThis.crypto.getRandomValues(nonce);
+  return nonce;
+}
+
+function randomComputationOffset() {
+  const extra = new Uint16Array(1);
+  globalThis.crypto.getRandomValues(extra);
+  return BigInt(Date.now()) * 1000n + BigInt(extra[0]);
+}
+
+async function buildPrivateOrderPayload({ program, isBuy, priceU64, sizeU64 }) {
+  const mxePublicKey = await getMXEPublicKey(program.provider, program.programId);
+  if (!mxePublicKey) {
+    throw new Error("Arcium MXE public key is not available for this program yet.");
+  }
+
+  const privateKey = x25519.utils.randomSecretKey();
+  const orderPubkey = x25519.getPublicKey(privateKey);
+  const collateralPrivateKey = x25519.utils.randomSecretKey();
+  const collateralPubkey = x25519.getPublicKey(collateralPrivateKey);
+  const orderCipher = new RescueCipher(x25519.getSharedSecret(privateKey, mxePublicKey));
+  const collateralCipher = new RescueCipher(x25519.getSharedSecret(collateralPrivateKey, mxePublicKey));
+
+  const orderNonceBytes = randomNonce16();
+  const collateralNonceBytes = randomNonce16();
+  const orderCiphertexts = orderCipher.encrypt(
+    [
+      0n,
+      BigInt(isBuy ? 0 : 1),
+      BigInt(priceU64.toString()),
+      BigInt(sizeU64.toString()),
+      BigInt(Date.now()),
+    ],
+    orderNonceBytes
+  );
+  const notional = BigInt(priceU64.toString()) * BigInt(sizeU64.toString());
+  const collateralCiphertext = collateralCipher.encrypt([notional], collateralNonceBytes);
+  const encryptedOrderBlob = Buffer.concat([
+    Buffer.from(orderPubkey),
+    Buffer.from(orderNonceBytes),
+    ...orderCiphertexts.map((item) => Buffer.from(item)),
+    Buffer.from(collateralPubkey),
+    Buffer.from(collateralNonceBytes),
+    ...collateralCiphertext.map((item) => Buffer.from(item)),
+  ]);
+
+  return {
+    encryptedOrderBlob,
+    orderPubkey: asBytes32(orderPubkey),
+    orderNonce: new BN(deserializeLE(orderNonceBytes).toString()),
+    orderAsset: asBytes32(orderCiphertexts[0]),
+    orderSide: asBytes32(orderCiphertexts[1]),
+    orderPrice: asBytes32(orderCiphertexts[2]),
+    orderSize: asBytes32(orderCiphertexts[3]),
+    orderTimestamp: asBytes32(orderCiphertexts[4]),
+    collateralPubkey: asBytes32(collateralPubkey),
+    collateralNonce: new BN(deserializeLE(collateralNonceBytes).toString()),
+    collateral: asBytes32(collateralCiphertext[0]),
   };
 }
 
@@ -147,6 +223,8 @@ export function OrderForm({ onSubmit, program, publicKey, walletLabel, market, a
       // Unique order id: use current timestamp (u64 as BN)
       const orderId = new BN(Date.now());
       const [orderPDA] = getOrderPDA(publicKey, orderId.toNumber());
+      const computationOffsetValue = randomComputationOffset();
+      const computationOffset = new BN(computationOffsetValue.toString());
 
       // 2. Resolve Arcium accounts (defaults for devnet cluster 456)
       const config = arciumAccounts?.computationConfig || computationConfigPDA;
@@ -167,77 +245,132 @@ export function OrderForm({ onSubmit, program, publicKey, walletLabel, market, a
 
       // 3. Format Arcis MPC Payload (Real payload replacing dummy Buffer)
       const sideByte = isBuy ? 0 : 1;
-      const priceU64 = new BN(Math.round(parseFloat(type === "market" ? "0" : price) * 1_000_000));
+      const effectivePrice = type === "market" ? currentPrice : parseFloat(price);
+      const priceU64 = new BN(Math.round(Number(effectivePrice || 0) * 1_000_000));
       const sizeU64 = new BN(Math.round(parseFloat(size) * 1_000_000));
       const encrypted = privLevel === "full";
 
       console.log("Packing Arcis module...");
       // Initialize packer
       let encryptedOrderBlob;
-      try {
-        const arcisModule = ArcisModule.fromJson(placeOrderData);
-        // Fallback AES mock if Arcis module isn't strictly exported as JSON
-        const randKey = serializeLE(generateRandomFieldElem(CURVE25519_SCALAR_FIELD_MODULUS), 32);
-        const cipher = new Aes256Cipher(randKey);
-
-        let plaintext;
-        if (arcisModule && arcisModule.types && arcisModule.types["PrivateOrder"]) {
-          const orderPacker = createPacker(arcisModule.types["PrivateOrder"]);
-          const orderData = {
-            asset: 0n, // Assuming SOL mapped to 0
-            side: isBuy ? 0 : 1, // Uint8
-            price: BigInt(priceU64.toString()), // u128
-            size: BigInt(sizeU64.toString()), // u128
-            timestamp: BigInt(Date.now()) // i64
-          };
-          // Pack to bigints
-          const packed = orderPacker.pack(orderData);
-          // Convert BigInt array to Uint8Array for ciphertext
-          plaintext = new Uint8Array(packed.length * 32); // Each field element takes 32 bytes
-        } else {
-          // Manual fallback formatting
-          plaintext = Buffer.alloc(49);
-          plaintext.writeUInt8(sideByte, 8);
-        }
-
-        const nonce = new Uint8Array(8); // CTR nonce
-        const ciphertext = cipher.encrypt(new Uint8Array(plaintext), nonce);
-        encryptedOrderBlob = Buffer.from(ciphertext);
-      } catch (err) {
-        console.warn("Arcis packing failed, falling back to local AES cipher generation:", err);
-        const randKey = serializeLE(generateRandomFieldElem(CURVE25519_SCALAR_FIELD_MODULUS), 32);
-        const cipher = new Aes256Cipher(randKey);
-        const ciphertext = cipher.encrypt(new Uint8Array(128), new Uint8Array(8));
-        encryptedOrderBlob = Buffer.from(ciphertext);
+      let privatePayload = null;
+      if (encrypted) {
+        privatePayload = await buildPrivateOrderPayload({ program, isBuy, priceU64, sizeU64 });
+        encryptedOrderBlob = privatePayload.encryptedOrderBlob;
       }
 
-      console.log("[OrderForm] Firing placeOrder:", { orderId: orderId.toString(), market: market.toBase58() });
+      if (!encryptedOrderBlob) {
+        try {
+          const arcisModule = ArcisModule.fromJson(placeOrderData);
+          const randKey = serializeLE(generateRandomFieldElem(CURVE25519_SCALAR_FIELD_MODULUS), 32);
+          const cipher = new Aes256Cipher(randKey);
 
-      const sig = await program.methods
-        .placeOrder({
-          orderId,
-          encryptedOrderBlob,
-        })
-        .accounts({
-          payer: publicKey,
-          userPosition: userPositionPDA,
-          owner: publicKey,
-          order: orderPDA,
-          market: market,
-          computationConfig: resolvedArcium.computationConfig,
-          arciumSignerPda: resolvedArcium.arciumSignerPda,
-          mxeAccount: resolvedArcium.mxeAccount,
-          mempoolAccount: resolvedArcium.mempoolAccount,
-          executionPoolAccount: resolvedArcium.executionPoolAccount,
-          computationAccount: resolvedArcium.computationAccount,
-          computationDefinitionAccount: resolvedArcium.computationDefinitionAccount,
-          clusterAccount: resolvedArcium.clusterAccount,
-          feePoolAccount: resolvedArcium.feePoolAccount,
-          clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
-          systemProgram: SystemProgram.programId,
-          arciumProgram: resolvedArcium.arciumProgram,
-        })
-        .rpc();
+          let plaintext;
+          if (arcisModule && arcisModule.types && arcisModule.types["PrivateOrder"]) {
+            const orderPacker = createPacker(arcisModule.types["PrivateOrder"]);
+            const orderData = {
+              asset: 0n,
+              side: isBuy ? 0 : 1,
+              price: BigInt(priceU64.toString()),
+              size: BigInt(sizeU64.toString()),
+              timestamp: BigInt(Date.now())
+            };
+            const packed = orderPacker.pack(orderData);
+            plaintext = new Uint8Array(packed.length * 32);
+          } else {
+            plaintext = Buffer.alloc(49);
+            plaintext.writeUInt8(sideByte, 8);
+          }
+
+          const nonce = new Uint8Array(8);
+          const ciphertext = cipher.encrypt(new Uint8Array(plaintext), nonce);
+          encryptedOrderBlob = Buffer.from(ciphertext);
+        } catch (err) {
+          console.warn("Arcis packing failed, falling back to local AES cipher generation:", err);
+          const randKey = serializeLE(generateRandomFieldElem(CURVE25519_SCALAR_FIELD_MODULUS), 32);
+          const cipher = new Aes256Cipher(randKey);
+          const ciphertext = cipher.encrypt(new Uint8Array(128), new Uint8Array(8));
+          encryptedOrderBlob = Buffer.from(ciphertext);
+        }
+      }
+
+      console.log("[OrderForm] Firing order:", { orderId: orderId.toString(), market: market.toBase58(), encrypted });
+
+      let sig;
+      if (encrypted) {
+        const [mxeAccount] = arciumAccounts?.mxeAccount ? [arciumAccounts.mxeAccount] : getArciumMXEAccountPDA();
+        const [signPdaAccount] = arciumAccounts?.signPdaAccount ? [arciumAccounts.signPdaAccount] : getArciumSignerPDA();
+        const [mempoolAccount] = arciumAccounts?.mempoolAccount ? [arciumAccounts.mempoolAccount] : getArciumMempoolPDA();
+        const [executingPool] = arciumAccounts?.executingPool ? [arciumAccounts.executingPool] : getArciumExecutingPoolPDA();
+        const [computationAccount] = arciumAccounts?.computationAccount ? [arciumAccounts.computationAccount] : getArciumComputationPDA(computationOffsetValue);
+        const [compDefAccount] = arciumAccounts?.compDefAccount ? [arciumAccounts.compDefAccount] : getArciumComputationDefinitionPDA();
+        const [clusterAccount] = arciumAccounts?.clusterAccount ? [arciumAccounts.clusterAccount] : getArciumClusterPDA();
+        const [poolAccount] = arciumAccounts?.poolAccount ? [arciumAccounts.poolAccount] : getArciumFeePoolPDA();
+        const [clockAccount] = arciumAccounts?.clockAccount ? [arciumAccounts.clockAccount] : getArciumClockPDA();
+
+        sig = await program.methods
+          .placeOrderPrivate({
+            orderId,
+            computationOffset,
+            encryptedOrderBlob,
+            orderPubkey: privatePayload.orderPubkey,
+            orderNonce: privatePayload.orderNonce,
+            orderAsset: privatePayload.orderAsset,
+            orderSide: privatePayload.orderSide,
+            orderPrice: privatePayload.orderPrice,
+            orderSize: privatePayload.orderSize,
+            orderTimestamp: privatePayload.orderTimestamp,
+            collateralPubkey: privatePayload.collateralPubkey,
+            collateralNonce: privatePayload.collateralNonce,
+            collateral: privatePayload.collateral,
+            maintenanceMarginBps: new BN(500),
+          })
+          .accounts({
+            payer: publicKey,
+            userPosition: userPositionPDA,
+            owner: publicKey,
+            order: orderPDA,
+            market: market,
+            mxeAccount,
+            signPdaAccount,
+            mempoolAccount,
+            executingPool,
+            computationAccount,
+            compDefAccount,
+            clusterAccount,
+            poolAccount,
+            clockAccount,
+            systemProgram: SystemProgram.programId,
+            arciumProgram: ARCIUM_PROGRAM_ID,
+          })
+          .rpc();
+      } else {
+        sig = await program.methods
+          .placeOrder({
+            orderId,
+            encryptedOrderBlob,
+          })
+          .accounts({
+            payer: publicKey,
+            userPosition: userPositionPDA,
+            owner: publicKey,
+            order: orderPDA,
+            market: market,
+            computationConfig: resolvedArcium.computationConfig,
+            arciumSignerPda: resolvedArcium.arciumSignerPda,
+            mxeAccount: resolvedArcium.mxeAccount,
+            mempoolAccount: resolvedArcium.mempoolAccount,
+            executionPoolAccount: resolvedArcium.executionPoolAccount,
+            computationAccount: resolvedArcium.computationAccount,
+            computationDefinitionAccount: resolvedArcium.computationDefinitionAccount,
+            clusterAccount: resolvedArcium.clusterAccount,
+            feePoolAccount: resolvedArcium.feePoolAccount,
+            clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
+            systemProgram: SystemProgram.programId,
+            arciumProgram: resolvedArcium.arciumProgram,
+          })
+          .rpc();
+      }
 
       setTxSig(sig);
       onSubmit?.({ sig, orderId: orderId.toNumber(), side, type, price, size });

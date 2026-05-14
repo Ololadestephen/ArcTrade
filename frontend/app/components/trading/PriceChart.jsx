@@ -48,7 +48,7 @@ export function PriceChart({ asset = "SOL/USDC", currentPrice, change }) {
     <div className="card animate-in" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <div className="card-header">
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontWeight: 700, color: "var(--bright)" }}>SOL / USDC</span>
+          <span style={{ fontWeight: 700, color: "var(--bright)" }}>{asset}</span>
           <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 18, color: "var(--cyan)", fontWeight: 300 }}>
             {currentPrice ? `$${currentPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "--"}
           </span>

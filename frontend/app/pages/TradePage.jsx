@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { usePrices } from "../hooks/usePrices";
 import { PriceChart } from "../components/trading/PriceChart";
 import { OrderForm } from "../components/trading/OrderForm";
-import { PrivacySummary } from "../components/privacy/PrivacySummary";
 import { PositionsList } from "../components/portfolio/PositionsList";
 import { OrdersList } from "../components/portfolio/OrdersList";
 import { TradeHistory } from "../components/portfolio/TradeHistory";
@@ -92,7 +91,7 @@ export function TradePage({ program, publicKey, wallet, positions = [], orders =
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2, height: "calc(100vh - 100px)", animation: "fadeIn 0.4s ease" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 2, minHeight: "calc(100vh - 100px)", animation: "fadeIn 0.4s ease" }}>
       {toast && (
         <div style={{
           position: "fixed", top: 80, right: 24, zIndex: 200, padding: "14px 20px",
@@ -129,13 +128,13 @@ export function TradePage({ program, publicKey, wallet, positions = [], orders =
       )}
 
       {/* MAIN TWO-COLUMN LAYOUT */}
-      <div style={{ display: "flex", gap: 2, flex: 1, minHeight: 0 }}>
+      <div style={{ display: "flex", gap: 2, flex: 1, minHeight: "calc(100vh - 112px)" }}>
 
         {/* LEFT COLUMN: Stats, Chart & Positions */}
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
 
           {/* Top Stats Bar */}
-          <div className="card animate-in" style={{ padding: "12px 20px", display: "flex", gap: 32, alignItems: "center", borderRadius: "8px" }}>
+          <div className="card animate-in" style={{ padding: "10px 20px", display: "flex", gap: 32, alignItems: "center", borderRadius: "8px", flexShrink: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(0,229,204,0.1)", border: "1px solid rgba(0,229,204,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>◎</div>
               <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: 18, color: "var(--white)" }}>SOL/USDC</span>
@@ -160,12 +159,12 @@ export function TradePage({ program, publicKey, wallet, positions = [], orders =
           </div>
 
           {/* Chart Area */}
-          <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ flex: "1 1 auto", minHeight: 520, display: "flex", flexDirection: "column" }}>
             <PriceChart asset="SOL/USDC" currentPrice={solPrice} change={solChange} />
           </div>
 
           {/* Bottom Positions Area */}
-          <div className="card animate-in" style={{ height: 280, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <div className="card animate-in" style={{ height: 240, display: "flex", flexDirection: "column", flexShrink: 0 }}>
             {/* Tabs Header */}
             <div style={{ padding: "0 16px", borderBottom: "1px solid var(--border)", display: "flex", gap: 24 }}>
               <button
@@ -261,9 +260,6 @@ export function TradePage({ program, publicKey, wallet, positions = [], orders =
               arciumAccounts={{ computationConfig }}
               currentPrice={solPrice}
             />
-            <div style={{ marginTop: 2 }}>
-              <PrivacySummary />
-            </div>
           </div>
         </div>
       </div>

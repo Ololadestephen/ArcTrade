@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
-import { CustomCursor } from "./app/components/common/CustomCursor";
 import { LandingPage } from "./app/pages/LandingPage";
 import { AppShell } from "./app/components/layout/AppShell";
 import { useWallet } from "./app/hooks/useWallet";
@@ -144,14 +143,7 @@ export default function App() {
 
   return (
     <>
-      <CustomCursor />
-
       <div className={`app-root ${darkPool ? "dark" : ""}`}>
-        <div id="arc-cursor" />
-        <div id="arc-ring" />
-        <div id="arc-trail" />
-        <div className="noise" />
-
         <Routes>
           <Route path="/" element={<LandingPage setPage={setPage} />} />
 

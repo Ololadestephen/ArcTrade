@@ -1,18 +1,17 @@
 // ArcTrade — SettingsPage (app/pages)
 import { useState } from "react";
 import { PrivacyLevelSelector } from "../components/privacy/PrivacyLevelSelector";
-import { DarkPoolModeToggle } from "../components/privacy/DarkPoolModeToggle";
 import { PrivacySummary } from "../components/privacy/PrivacySummary";
 
 import { PROGRAM_ID, ARCIUM_PROGRAM_ID, CLUSTER } from "../utils/constants";
 
 const NOTIFICATION_OPTIONS = [
-  { id: "trades", label: "Trade Settlements", desc: "When trades settle" },
-  { id: "liq", label: "Liquidation Alerts", desc: "Position health warnings" },
-  { id: "mev", label: "MEV Attempts", desc: "Blocked MEV notifications" },
+  { id: "trades", label: "Trade settlements" },
+  { id: "liq", label: "Liquidation alerts" },
+  { id: "mev", label: "MEV alerts" },
 ];
 
-export function SettingsPage({ darkPool, setDarkPool, wallet, publicKey, disconnect }) {
+export function SettingsPage({ wallet, publicKey, connect, disconnect }) {
   const [privLevel, setPrivLevel] = useState("full");
   const [notifs, setNotifs] = useState({ trades: true, liq: true, mev: false });
 
@@ -22,7 +21,17 @@ export function SettingsPage({ darkPool, setDarkPool, wallet, publicKey, disconn
   const truncatedWallet = wallet ? `${wallet.slice(0, 4)}...${wallet.slice(-4)}` : "Disconnected";
 
   return (
-    <div style={{ animation: "fadeIn 0.4s ease", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, alignItems: "start" }}>
+    <div style={{ animation: "fadeIn 0.4s ease" }}>
+      <div style={{ padding: "10px 0 26px", borderBottom: "1px solid var(--border)", marginBottom: 18 }}>
+        <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, color: "var(--cyan)", letterSpacing: "0.18em", textTransform: "uppercase", marginBottom: 14 }}>
+          Settings
+        </div>
+        <h1 style={{ fontFamily: "'Instrument Serif',serif", fontSize: "clamp(48px,6vw,76px)", fontWeight: 400, lineHeight: 0.95, color: "var(--ink)" }}>
+          Privacy and network.
+        </h1>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2, alignItems: "start" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <div className="card">
           <div className="card-header">
@@ -32,7 +41,6 @@ export function SettingsPage({ darkPool, setDarkPool, wallet, publicKey, disconn
           </div>
           <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
             <PrivacyLevelSelector value={privLevel} onChange={setPrivLevel} />
-            <DarkPoolModeToggle enabled={darkPool} onToggle={() => setDarkPool((p) => !p)} />
           </div>
         </div>
 
@@ -51,7 +59,6 @@ export function SettingsPage({ darkPool, setDarkPool, wallet, publicKey, disconn
               }}>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "var(--bright)" }}>{n.label}</div>
-                  <div style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--dim)" }}>{n.desc}</div>
                 </div>
                 <label className="toggle">
                   <input type="checkbox" checked={notifs[n.id]} onChange={() => toggleNotif(n.id)} />
@@ -143,7 +150,7 @@ export function SettingsPage({ darkPool, setDarkPool, wallet, publicKey, disconn
 
         <PrivacySummary />
       </div>
+      </div>
     </div>
   );
 }
-

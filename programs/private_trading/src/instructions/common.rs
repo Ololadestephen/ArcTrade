@@ -5,7 +5,7 @@ use crate::errors::PrivateTradingError;
 use crate::state::ComputationConfigAccount;
 
 pub fn require_encrypted_accounts(
-    arcium_signer_pda: &AccountInfo<'_>,
+    _arcium_signer_pda: &AccountInfo<'_>,
     mxe_account: &AccountInfo<'_>,
     mempool_account: &AccountInfo<'_>,
     execution_pool_account: &AccountInfo<'_>,
