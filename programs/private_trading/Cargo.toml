@@ -18,7 +18,7 @@ idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = { version = "0.32.1", features = ["init-if-needed"] }
-arcium-anchor = "0.9.7"
+arcium-anchor = { version = "0.9.7", features = ["multi-tx-callbacks"] }
 arcium-client = { version = "0.9.7", default-features = false }
 arcium-macros = "0.9.7"
 solana-program = "2.3.0"

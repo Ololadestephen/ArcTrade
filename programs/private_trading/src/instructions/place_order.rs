@@ -128,7 +128,7 @@ pub fn place_order_private(
         .plaintext_u64(args.maintenance_margin_bps)
         .build();
 
-    queue_computation(ctx.accounts, args.computation_offset, computation_args, vec![], 1, 0)?;
+    queue_computation(ctx.accounts, args.computation_offset, computation_args, vec![], 0, 0)?;
 
     emit!(OrderPlaced {
         order_hash: computation_id,
