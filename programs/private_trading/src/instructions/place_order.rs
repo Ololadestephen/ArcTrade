@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 use arcium_anchor::prelude::*;
+use arcium_client::idl::arcium::types::CallbackInstruction;
 
 use crate::constants::{IX_PLACE_ORDER, MAX_ENCRYPTED_ORDER_BLOB, ORDER_SEED, ORDER_STATUS_OPEN};
 use crate::errors::PrivateTradingError;
@@ -128,7 +129,20 @@ pub fn place_order_private(
         .plaintext_u64(args.maintenance_margin_bps)
         .build();
 
-    queue_computation(ctx.accounts, args.computation_offset, computation_args, vec![], 0, 0)?;
+    let callback_instructions = vec![CallbackInstruction {
+        program_id: ID,
+        discriminator: crate::instruction::HandleCallback::DISCRIMINATOR.to_vec(),
+        accounts: vec![],
+    }];
+
+    queue_computation(
+        ctx.accounts,
+        args.computation_offset,
+        computation_args,
+        callback_instructions,
+        1,
+        0,
+    )?;
 
     emit!(OrderPlaced {
         order_hash: computation_id,
