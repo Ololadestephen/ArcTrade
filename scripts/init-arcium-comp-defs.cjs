@@ -8,6 +8,7 @@ const { Connection, Keypair, PublicKey, SystemProgram, AddressLookupTableProgram
 const {
   ARCIUM_IDL,
   getArciumProgramId,
+  getArciumProgram,
   getMXEAccAddress,
   getCompDefAccAddress,
   getLookupTableAddress,
@@ -45,9 +46,12 @@ async function main() {
   });
   anchor.setProvider(provider);
 
-  const idl = JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/private_trading.json"), "utf8"));
-  const program = new anchor.Program(idl, PROGRAM_ID, provider);
-  const arciumProgram = new anchor.Program(ARCIUM_IDL, getArciumProgramId(), provider);
+  const idl = {
+    ...JSON.parse(fs.readFileSync(path.join(ROOT, "target/idl/private_trading.json"), "utf8")),
+    address: PROGRAM_ID.toBase58(),
+  };
+  const program = new anchor.Program(idl, provider);
+  const arciumProgram = getArciumProgram(provider);
 
   const mxeAccount = getMXEAccAddress(PROGRAM_ID);
   const mxe = await arciumProgram.account.mxeAccount.fetch(mxeAccount);
