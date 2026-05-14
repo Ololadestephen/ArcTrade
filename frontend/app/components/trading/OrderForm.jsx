@@ -103,6 +103,11 @@ function randomComputationOffset() {
   return BigInt(Date.now()) * 1000n + BigInt(extra[0]);
 }
 
+async function sha256Bytes(bytes) {
+  const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
+  return Buffer.from(digest);
+}
+
 async function buildPrivateOrderPayload({ program, isBuy, priceU64, sizeU64 }) {
   const mxePublicKey = await getMXEPublicKey(program.provider, program.programId);
   if (!mxePublicKey) {
@@ -130,7 +135,7 @@ async function buildPrivateOrderPayload({ program, isBuy, priceU64, sizeU64 }) {
   );
   const notional = BigInt(priceU64.toString()) * BigInt(sizeU64.toString());
   const collateralCiphertext = collateralCipher.encrypt([notional], collateralNonceBytes);
-  const encryptedOrderBlob = Buffer.concat([
+  const encryptedOrderPayload = Buffer.concat([
     Buffer.from(orderPubkey),
     Buffer.from(orderNonceBytes),
     ...orderCiphertexts.map((item) => Buffer.from(item)),
@@ -138,6 +143,7 @@ async function buildPrivateOrderPayload({ program, isBuy, priceU64, sizeU64 }) {
     Buffer.from(collateralNonceBytes),
     ...collateralCiphertext.map((item) => Buffer.from(item)),
   ]);
+  const encryptedOrderBlob = await sha256Bytes(encryptedOrderPayload);
 
   return {
     encryptedOrderBlob,
