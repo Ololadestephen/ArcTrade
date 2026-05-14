@@ -13,15 +13,33 @@ By encrypting trader intent (size, side, entry price) until the trade is finaliz
 - **Sleek Trading Terminal:** A professional, fully featured UI inspired by modern institutional platforms.
 
 ## Arcium Integration
-ArcTrade relies heavily on Arcium's confidential computing capabilities:
-1. Users encrypt their trade parameters locally using the target Arcium node's public key.
-2. The Solana smart contract (Anchor) stores this encrypted blob and assigns a task to the MPC cluster.
-3. Arcium nodes compute the order matching logic inside secure enclaves without ever seeing the plaintext data.
-4. Finalized PnL and trade execution results are published back to the Solana blockchain.
+ArcTrade uses Arcium as the privacy layer for the trading engine. The project is split into two main parts:
+
+- `encrypted-ixs/circuits/private_trading.rs` defines the confidential Arcis computations for private order validation, matching, liquidation checks, settlement, cancellation, and position updates.
+- `programs/private_trading` is the Anchor/Solana state and settlement layer. It stores encrypted order and position blobs, records pending computation references, validates Arcium-related accounts, and exposes callback-style settlement paths that reveal only final public outputs such as realized PnL and liquidation status.
+
+The intended private execution flow is:
+
+1. Users pack and encrypt trade parameters client-side, including side, size, price, position, collateral, and liquidation inputs.
+2. The Solana program stores ciphertext rather than plaintext trader intent.
+3. Arcis confidential instructions perform matching, liquidation, and settlement logic over encrypted inputs.
+4. Only final settlement outputs, such as realized PnL or liquidation flags, are made public on-chain.
 
 ```text
-User → Encrypts Order → Arcium MPC → Private Match → Final PnL → On-chain
+User → Encrypted Order/Position → Arcis Private Compute → Callback/Settlement → Final PnL On-chain
 ```
+
+### Privacy Benefits
+
+Public perpetuals and order-book systems leak trader intent before execution. Visible order size, side, entry price, and liquidation thresholds can enable copy-trading, front-running, sandwiching, and targeted liquidations. ArcTrade reduces this leakage by keeping the sensitive inputs encrypted through the trading workflow and revealing only the minimum final state needed for settlement.
+
+### What to Review
+
+- Confidential trading logic: `encrypted-ixs/circuits/private_trading.rs`
+- Solana program entrypoints: `programs/private_trading/src/lib.rs`
+- Encrypted state and callback tracking: `programs/private_trading/src/state/mod.rs`
+- Arcium account validation and computation references: `programs/private_trading/src/instructions/common.rs`
+- Callback-style final settlement: `programs/private_trading/src/instructions/callback.rs`
 
 ## 🎮 Live Demo
 Try ArcTrade on Devnet: [https://arctrades.vercel.app](https://arctrades.vercel.app)
