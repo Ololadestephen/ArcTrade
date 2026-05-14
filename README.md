@@ -1,16 +1,17 @@
 # ArcTrade - Private Trading Built on Arcium MPC
 
-ArcTrade is a decentralized, privacy-preserving trading terminal built on Solana. It utilizes the **Arcium MPC network** to enable features like encrypted mempools, hidden limit orders, and dark pool liquidity. 
+ArcTrade is a decentralized, privacy-preserving trading terminal built on Solana. It uses the **Arcium MPC network** to demonstrate encrypted trader intent, private order submission, and offchain confidential computation definitions.
 
-By encrypting trader intent (size, side, entry price) until the trade is finalized, ArcTrade mitigates MEV extraction, front-running, and copy-trading, ensuring your edge stays yours.
+By encrypting trader intent such as size, side, and entry price before it reaches public state, ArcTrade reduces the information available to copy-traders, front-runners, and liquidation hunters.
 
 ![ArcTrade Terminal](assets/screenshot.png)
 
 ## Features
-- **Encrypted Orders:** Order data is encrypted client-side and sent directly to the Arcium MPC network.
-- **Dark Pool Matching:** Orders are matched privately without revealing the order book state.
-- **MEV Protection:** Trades cannot be sandwiched or front-run since the mempool data is encrypted.
-- **Sleek Trading Terminal:** A professional, fully featured UI inspired by modern institutional platforms.
+- **Private Order Submission:** Order data is encrypted client-side and submitted through a Solana instruction that queues Arcium computation.
+- **Arcium Offchain Circuits:** Computation definitions point to public GitHub-hosted `.arcis` artifacts with hash verification.
+- **Open Order Visibility:** Submitted private orders appear as open orders while the sensitive trade fields remain encrypted.
+- **Demo Settlement Flow:** Matching and PnL settlement are represented as a simulation layer in the current demo.
+- **Trading Terminal UI:** A polished Vercel-deployed interface for wallet connection, account initialization, private order entry, and order review.
 
 ## Arcium Integration
 ArcTrade uses Arcium as the privacy layer for the trading engine. The project is split into two main parts:
@@ -18,21 +19,25 @@ ArcTrade uses Arcium as the privacy layer for the trading engine. The project is
 - `encrypted-ixs/circuits/private_trading.rs` defines the confidential Arcis computations for private order validation, matching, liquidation checks, settlement, cancellation, and position updates.
 - `programs/private_trading` is the Anchor/Solana state and settlement layer. It stores encrypted order and position blobs, records pending computation references, queues Arcium computations, and exposes callback-style settlement paths that reveal only final public outputs such as realized PnL and liquidation status.
 
-The intended private execution flow is:
+The implemented private order flow is:
 
 1. Users pack and encrypt trade parameters client-side, including side, size, price, position, collateral, and liquidation inputs.
-2. The Solana program stores ciphertext rather than plaintext trader intent.
+2. The Solana program stores encrypted order data or commitments rather than plaintext trader intent.
 3. The `place_order_private` instruction calls Arcium `queue_computation(...)` for the `place_order` Arcis circuit.
-4. Arcis confidential instructions perform matching, liquidation, and settlement logic over encrypted inputs.
-5. Only final settlement outputs, such as realized PnL or liquidation flags, are made public on-chain.
+4. Arcium receives the encrypted arguments and uses the registered offchain circuit definition for private computation.
+5. The order appears in the open-order view without exposing the underlying private order fields.
+
+Matching, liquidation checks, and final settlement callbacks are included as circuit/program structure, but the live demo currently treats matching and PnL as a simulation layer rather than a production settlement engine.
 
 ```text
-User → Encrypted Order/Position → Arcis Private Compute → Callback/Settlement → Final PnL On-chain
+User → Encrypted Order → Solana Order Account → Arcium Queue → Open Order / Demo Settlement
 ```
 
 ### Privacy Benefits
 
 Public perpetuals and order-book systems leak trader intent before execution. Visible order size, side, entry price, and liquidation thresholds can enable copy-trading, front-running, sandwiching, and targeted liquidations. ArcTrade reduces this leakage by keeping the sensitive inputs encrypted through the trading workflow and revealing only the minimum final state needed for settlement.
+
+In the current demo, the strongest live privacy guarantee is around private order submission: order size, direction, price, timestamp, and collateral inputs are encrypted before the Arcium queue instruction is sent. The settlement UI is intentionally demo-stage.
 
 ### What to Review
 
@@ -44,6 +49,27 @@ Public perpetuals and order-book systems leak trader intent before execution. Vi
 - Encrypted state and callback tracking: `programs/private_trading/src/state/mod.rs`
 - Arcium account validation and computation references: `programs/private_trading/src/instructions/common.rs`
 - Callback-style final settlement: `programs/private_trading/src/instructions/callback.rs`
+
+### Current Demo Scope
+
+What is live:
+
+- Devnet Solana program deployment.
+- Arcium `0.9.7` integration.
+- Public GitHub-hosted offchain circuit artifacts.
+- Initialized Arcium computation definitions.
+- Private order encryption in the frontend.
+- `place_order_private` calling Arcium `queue_computation(...)`.
+- Open-order display after submission.
+
+What is demo-stage:
+
+- Order matching.
+- PnL calculation.
+- Final settlement visibility.
+- Position accounting after match.
+
+The Match action in the UI is a demonstration of the intended settlement experience, not a production-grade matching engine.
 
 ### Offchain Circuit Definitions
 
