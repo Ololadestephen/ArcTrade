@@ -88,6 +88,24 @@ The frontend's full-privacy order path uses `@arcium-hq/client` to fetch the MXE
 ## 🎮 Live Demo
 Try ArcTrade on Devnet: [https://arctrades.vercel.app](https://arctrades.vercel.app)
 
+## Verification
+
+- Devnet program: `e6oyALFfDbVMy4gp3xVr5hRXo5VyCSw23gxk9M3YALM`
+- Live app: [https://arctrades.vercel.app](https://arctrades.vercel.app)
+- Arcium version: `0.9.7`
+- Private order entrypoint: `place_order_private`
+- Arcium queue call: `programs/private_trading/src/instructions/place_order.rs`
+- Computation-definition init: `programs/private_trading/src/instructions/arcium_comp_defs.rs`
+- Offchain circuit artifacts: `build/*.arcis`, `build/*.hash`, `build/*.idarc`, `build/*.weight`
+
+Build checks:
+
+```bash
+anchor build
+cd frontend
+npm run build
+```
+
 
 
 ## 🛠️ Built With
