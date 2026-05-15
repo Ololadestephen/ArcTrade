@@ -4,7 +4,7 @@ ArcTrade is a decentralized, privacy-preserving trading terminal built on Solana
 
 By encrypting trader intent such as size, side, and entry price before it reaches public state, ArcTrade reduces the information available to copy-traders, front-runners, and liquidation hunters.
 
-![ArcTrade Terminal](assets/screenshot.png)
+![ArcTrade Terminal](assets/arctrade-landing-screenshot.png)
 
 ## Features
 - **Private Order Submission:** Order data is encrypted client-side and submitted through a Solana instruction that queues Arcium computation.
